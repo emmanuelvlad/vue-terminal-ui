@@ -1,0 +1,116 @@
+{
+  "name": "vue-terminal",
+  "version": "0.1.0",
+  "description": "Terminal based on vue",
+  "main": "dist/vue-terminal.umd.js",
+  "module": "dist/vue-terminal.esm.js",
+  "unpkg": "dist/vue-terminal.min.js",
+  "scripts": {
+    "dev": "vue serve src/VueTerminal.vue",
+    "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+    "build:umd": "rollup --config build/rollup.config.js --format umd --file dist/vue-terminal.umd.js",
+    "build:es": "rollup --config build/rollup.config.js --format es --file dist/vue-terminal.esm.js",
+    "build:unpkg": "rollup --config build/rollup.config.js --format iife --file dist/vue-terminal.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EmmanuelVlad/vue-terminal.git"
+  },
+  "keywords": [
+    "vue",
+    "terminal"
+  ],
+  "author": "Emmanuel Vlad",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EmmanuelVlad/vue-terminal/issues"
+  },
+  "homepage": "https://github.com/EmmanuelVlad/vue-terminal#readme",
+  "dependencies": {
+    "vue": "^2.6.10"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.5.5",
+    "@vue/cli-plugin-eslint": "^3.5.1",
+    "@vue/cli-service": "^3.5.3",
+    "babel-eslint": "^10.0.1",
+    "cross-env": "^5.2.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.2.2",
+    "rollup": "^1.10.0",
+    "rollup-plugin-buble": "^0.19.6",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-vue": "^5.0.0",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "babel": {
+    "presets": [
+      "@vue/app"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:vue/strongly-recommended"
+    ],
+    "rules": {
+      "indent": [
+        "error",
+        "tab"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ],
+      "no-console": "warn",
+      "no-unused-vars": "warn",
+      "vue/script-indent": [
+        "error",
+        "tab"
+      ],
+      "vue/html-indent": [
+        "error",
+        "tab"
+      ],
+      "vue/multiline-html-element-content-newline": [
+        "error",
+        {
+          "allowEmptyLines": true
+        }
+      ],
+      "vue/no-unused-components": "warn",
+      "vue/html-closing-bracket-newline": [
+        "error",
+        {
+          "singleline": "never",
+          "multiline": "never"
+        }
+      ],
+      "linebreak-style": [
+        "error",
+        "unix"
+      ],
+      "quotes": [
+        "error",
+        "double"
+      ]
+    },
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}

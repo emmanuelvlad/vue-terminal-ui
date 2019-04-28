@@ -12,7 +12,7 @@
 
 ### Script
 ```js
-import { VueTerminalUI } from "vue-terminal"
+import { VueTerminalUI } from "@evlad/vue-terminal"
 
 export default {
   ...

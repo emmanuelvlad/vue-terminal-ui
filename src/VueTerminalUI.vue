@@ -133,7 +133,7 @@ export default {
 
 		updateInput(str) {
 			this.input = str;
-			this.$emit('update:input', str);
+			this.$emit("update:input", str);
 		},
 
 		updateCursor(nb) {
@@ -245,7 +245,11 @@ export default {
 
 		this.$on("write", line => {
 			this.write(line);
-		})
+		});
+
+		this.$on("clearHistory", () => {
+			this.history = [];
+		});
 	}
 };
 </script>

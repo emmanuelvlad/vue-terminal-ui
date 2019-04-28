@@ -1,4 +1,4 @@
-import VueTerminal from "src/VueTerminal";
-import VueTerminalUI from "src/VueTerminalUI";
+import VueTerminal from "./VueTerminal.vue";
+import VueTerminalUI from "./VueTerminalUI.vue";
 
-export { VueTerminal, VueTerminalUI };
+export default { VueTerminal, VueTerminalUI };

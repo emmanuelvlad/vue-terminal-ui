@@ -8,7 +8,7 @@
 
 
 <script>
-import VueTerminalUI from "./VueTerminalUI";
+import VueTerminalUI from "./VueTerminalUI.vue";
 import Commands from "./terminal/Commands";
 import Directory from "./terminal/Directory";
 
@@ -24,7 +24,7 @@ export default {
 	// Components
 	//
 	components: {
-		"vue-terminal-ui": VueTerminalUI
+		VueTerminalUI
 	},
 
 	//

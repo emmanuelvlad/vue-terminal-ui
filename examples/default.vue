@@ -8,7 +8,8 @@
 
 <script>
 /* eslint-disable */
-import VueTerminalUI from "../src/VueTerminalUI";
+// import { VueTerminalUI } from "@evlad/vue-terminal"
+import VueTerminalUI from "../src/VueTerminalUI.vue";
 
 export default {
 	//
@@ -27,7 +28,7 @@ export default {
 	// Components
 	//
 	components: {
-		"vue-terminal-ui": VueTerminalUI
+		VueTerminalUI
 	},
 
 	//

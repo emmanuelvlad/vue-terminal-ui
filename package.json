@@ -1,6 +1,6 @@
 {
   "name": "@evlad/vue-terminal",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Terminal based on vue",
   "main": "dist/vue-terminal.umd.js",
   "module": "dist/vue-terminal.esm.js",

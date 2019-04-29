@@ -85,7 +85,7 @@ export default {
 	methods: {
 
 		write(content, prefix = false) {
-			let parsed = String(content).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/ /g, "&nbsp;");
+			let parsed = String(content).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/ /g, "&nbsp;").replace(/\n/g, "<br>");
 			let obj = {
 				prefix: (prefix) ? this.prefix : "",
 				content: parsed
@@ -98,15 +98,20 @@ export default {
 			});
 		},
 
-		inputSend() {
+		inputSend(triggerCommand = true) {
 			let input = this.input;
 			this.write(input, true);
 			this.updateInput("");
 			this.savedInput = "";
 			this.commandsHistoryIndex = 0;
 			this.setCursor(0);
-			this.commandsHistory.unshift(input);
-			this.$emit("triggerCommand", input);
+			if (input.trim()) {
+				this.commandsHistory.unshift(input);
+				if (triggerCommand) {
+					let split = input.trim().split(" ");
+					this.$emit("triggerCommand", split[0], split.splice(1, split.length));
+				}
+			}
 		},
 
 		pasteText(raw) {

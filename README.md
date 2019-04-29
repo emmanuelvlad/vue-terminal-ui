@@ -37,11 +37,9 @@ export default {
   ...
 
   methods: {
-    doSomething(command) {
-      let args = command.split(" ");
-
-      if (args[0] === "addLine" && args[1]) {
-        this.$refs["my-terminal-ui"].$emit("write", args[1]);
+    doSomething(command, args) {
+      if (command === "addLine" && args.length > 0) {
+        this.$refs["my-terminal-ui"].$emit("write", args[0]);
       }
     }
   }

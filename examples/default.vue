@@ -67,11 +67,6 @@ export default {
 		// Printing the credits ...
 		printCredits() {
 			let credit = `
- dP""b8 88""Yb 888888 8888b.  88 888888 .dP"Y8                                                                   
-dP   \`" 88__dP 88__    8I  Yb 88   88   \`Ybo."                                                                   
-Yb      88"Yb  88""    8I  dY 88   88   o.\`Y8b                                                                   
- YboodP 88  Yb 888888 8888Y"  88   88   8bodP'
-
        _                                                
  __   |_ ._ _  ._ _   _. ._       _  |   \\  / |  _.  _| 
       |_ | | | | | | (_| | | |_| (/_ |    \\/  | (_| (_| `;

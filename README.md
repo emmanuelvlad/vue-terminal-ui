@@ -2,7 +2,7 @@
 ![license](https://img.shields.io/npm/l/@evlad/vue-terminal.svg)
 # Vue terminal
 
-![gif](https://i.imgur.com/ohswlr5.gif)
+![gif](https://i.imgur.com/XV9pGib.gif)
 
 ## Installation
 

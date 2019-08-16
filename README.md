@@ -29,7 +29,7 @@ Here is an example
 
 **Script**
 ```js
-import { VueTerminalUI } from "@evlad/vue-terminal"
+import VueTerminalUI from "@evlad/vue-terminal-ui"
 
 export default {
   ...

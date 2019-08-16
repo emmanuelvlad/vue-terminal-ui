@@ -1,13 +1,13 @@
-![npm version](https://img.shields.io/npm/v/@evlad/vue-terminal.svg)
-![license](https://img.shields.io/npm/l/@evlad/vue-terminal.svg)
-# Vue terminal
+![npm version](https://img.shields.io/npm/v/@evlad/vue-terminal-ui.svg)
+![license](https://img.shields.io/npm/l/@evlad/vue-terminal-ui.svg)
+# Vue terminal UI
 
 ![gif](https://i.imgur.com/XV9pGib.gif)
 
 ## Installation
 
 ```
-npm install @evlad/vue-terminal
+npm install @evlad/vue-terminal-ui
 ```
 
 ## Usage
@@ -15,8 +15,6 @@ npm install @evlad/vue-terminal
 > The list of components that it exports
 
 ### VueTerminalUI
-
-Only the UI part of the terminal without any commands
 
 Here is an example
 
@@ -45,8 +43,3 @@ export default {
   }
 }
 ```
-
-
-### VueTerminal
-
-todo

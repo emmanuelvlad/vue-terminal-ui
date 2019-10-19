@@ -35,9 +35,9 @@ export default {
   ...
 
   methods: {
-    doSomething(command, args) {
-      if (command === "addLine" && args.length > 0) {
-        this.$refs["my-terminal-ui"].$emit("write", args[0]);
+    commandHandler(command, args) {
+      if (command === "write" && args.length > 0) {
+        this.$refs["my-terminal-ui"].$emit("write", "\\color:rainbow;" + args.join(" "));
       }
     }
   }

@@ -4,7 +4,6 @@
 			id="terminal"
 			@keyup.ctrl="handleKey"
 			ref="terminal">
-
 			<!-- History -->
 			<div id="history">
 				<div
@@ -29,19 +28,16 @@
 				</div>
 
 				<div id="input">
-
 					<span
 						v-for="(char, key) in input"
 						:key="key"
 						:ref="`input-${key + 1}`"
-						class="">{{ (char === " ") ? "&nbsp;" : char }}</span>
+						class>{{ (char === " ") ? "&nbsp;" : char }}</span>
 					<span
 						ref="input-0"
 						class="cursor">&nbsp;</span>
-
 				</div>
 			</div>
-
 		</div>
 	</div>
 </template>
@@ -49,258 +45,402 @@
 
 <script>
 export default {
-	//
-	// Name
-	//
-	name: "VueTerminalUI",
+  //
+  // Name
+  //
+  name: "VueTerminalUI",
 
-	//
-	// Data
-	//
-	data: () => {
-		return {
-			input: "",
-			history: [],
-			commandsHistory: [],
-			commandsHistoryIndex: 0,
-			savedInput: "",
-			cursorIndex: 0,
-			limit: 255
-		};
-	},
+  //
+  // Data
+  //
+  data: () => {
+    return {
+      input: "",
+      history: [],
+      commandsHistory: [],
+      commandsHistoryIndex: 0,
+      savedInput: "",
+      cursorIndex: 0,
+      inputLimit: 255
+    };
+  },
 
-	//
-	// Props
-	//
-	props: {
-		prefix: {
-			type: String,
-			default: ""
-		},
-	},
+  //
+  // Props
+  //
+  props: {
+    prefix: {
+      type: String,
+      default: ""
+    }
+  },
 
-	//
-	// Methods
-	//
-	methods: {
+  //
+  // Methods
+  //
+  methods: {
+    write(content, prefix = false) {
+			const colorHandler = (str) => {
+				let colorTagFound = false;
 
-		write(content, prefix = false) {
-			let parsed = String(content).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/ /g, "&nbsp;").replace(/\n/g, "<br>");
-			let obj = {
-				prefix: (prefix) ? this.prefix : "",
-				content: parsed
+				let colorParsed = str.replace(/\\color:((#[a-f0-9]{6})|(rainbow));/gi, (tag) => {
+					let colorCode = tag.substring(7, tag.length - 1);
+					let replaced;
+
+					switch (tag.substring(7, tag.length - 1)) {
+						case "rainbow":
+							replaced = (colorTagFound) ? `</span><span class='rainbow-text'>` : `<span class='rainbow-text'>`;
+							break;
+						default:
+							replaced = (colorTagFound) ? `</span><span style="color: ${colorCode};">` : `<span style="color: ${colorCode};">`;
+							break; 
+					}
+					colorTagFound = true;
+					return replaced;
+				});
+
+				return (colorTagFound) ? colorParsed + "</span>" : colorParsed;
 			};
-			new Promise(res => {
-				this.history.push(obj);
-				res();
-			}).then(() => {
-				this.$refs.text.scrollIntoView(false);
-			});
-		},
 
-		inputSend(triggerCommand = true) {
-			let input = this.input;
-			this.write(input, true);
+			const styleHandler = (str) => {
+				let lastStyleFound;
+
+				let colorParsed = str.replace(/\\style:((bold)|(underline)|(strike)|(italic)|(none));/gi, (tag) => {
+					let styleTag;
+
+					switch (tag.substring(7, tag.length - 1)) {
+						case "bold":
+							styleTag = "strong";
+							break;
+						case "underline":
+							styleTag = "ins";
+							break;
+						case "strike":
+							styleTag = "del";
+							break;
+						case "italic":
+							styleTag = "i";
+							break;
+						case "none":
+							var tmp = lastStyleFound;
+							lastStyleFound = null;
+							return `</${tmp}>`
+					}
+					let replaced = (lastStyleFound) ? `</${lastStyleFound}><${styleTag}>` : `<${styleTag}>`;
+					lastStyleFound = styleTag;
+					return replaced;
+				});
+
+				return (lastStyleFound) ? colorParsed + `</${lastStyleFound}>` : colorParsed;
+			};
+
+
+
+      let parsed = String(content)
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/ /g, "&nbsp;")
+				.replace(/\n/g, "<br>");
+
+      new Promise(res => {
+        this.history.push({
+					prefix: prefix ? this.prefix : "",
+					content: (prefix ? parsed : colorHandler(styleHandler(parsed))) || "&#8203;"
+				});
+        res();
+      }).then(() => {
+        this.$refs["text"].scrollIntoView(false);
+      });
+		},
+		
+		clearInput() {
+			this.write(this.input, true);
 			this.updateInput("");
 			this.savedInput = "";
-			this.commandsHistoryIndex = 0;
+      this.commandsHistoryIndex = 0;
 			this.setCursor(0);
-			if (input.trim()) {
-				this.commandsHistory.unshift(input);
-				if (triggerCommand) {
-					let split = input.trim().split(" ");
-					this.$emit("triggerCommand", split[0], split.splice(1, split.length));
-				}
+		},
+
+		sendInput() {
+			let savedInput = this.input;
+			this.clearInput();
+
+			if (savedInput.trim()) {
+				let commandArgs = savedInput.trim().split(" ");
+				this.commandsHistory.unshift(savedInput);
+				this.$emit("triggerCommand", commandArgs[0], commandArgs.splice(1, commandArgs.length));
 			}
 		},
 
-		pasteText(raw) {
-			let text = raw.replace(/\t/g, "");
-			if (this.input.length >= this.limit) return;
-			if (this.input.length + text.length >= this.limit) text = text.substring(0, this.limit - this.input.length);
-			let index = (this.cursorIndex === 0) ? this.input.length : this.cursorIndex;
-			let str = this.input;
-			this.updateInput(str.substring(0, index - 1) + text + str.substring(index - 1, str.length));
-			this.updateCursor(text.length);
-		},
+    paste(str) {
+			let pastedText = str.replace(/\t/g, "");
 
-		setCursor(index) {
-			const getRef = (i) => {
-				return this.$refs[`input-${i}`][0] || this.$refs[`input-${i}`];
+      // if (this.input.length >= this.inputLimit) return;
+      // if (this.input.length + pastedText.length >= this.inputLimit)
+			// 	pastedText = pastedText.substring(0, this.inputLimit - this.input.length);
+
+			this.writeToInput(pastedText);
+    },
+
+    setCursor(index, retried = false) {
+      const getRef = i => {
+        return (this.$refs[`input-${i}`] && this.$refs[`input-${i}`].length) ? this.$refs[`input-${i}`][0] : this.$refs[`input-${i}`];
 			};
-
-			if (!getRef(index)) return;
-
-			getRef(this.cursorIndex).className = "";
-			getRef(index).className = "cursor";
-			this.cursorIndex = index;
-		},
-
-		updateInput(str) {
-			this.input = str;
-			this.$emit("update:input", str);
-		},
-
-		updateCursor(nb) {
-			let predict = this.cursorIndex + nb;
-			let index = this.cursorIndex;
-
-			// If at the of the initial position 
-			if (this.cursorIndex === 0) {
-				index = (predict === -1) ? this.input.length : 0;
-			}
-			// If at the end of input then go to the initial cursor index
-			else if (predict > this.input.length) {
-				index = 0;
-			}
-			// If at the beggining of the input, stays here
-			else if (predict < 1) {
-				index = 1;
-			} else {
-				index += nb;
-			}
-
-			this.setCursor(index);
-		},
-
-		handleKey(e) {
-			const keyCode = e.keyCode;
-			const printable = 
-				(keyCode > 47 && keyCode < 58)   || // number keys
-				keyCode == 32 || keyCode == 13   || // spacebar & return key(s) (if you want to allow carriage returns)
-				(keyCode > 64 && keyCode < 91)   || // letter keys
-				(keyCode > 95 && keyCode < 112)  || // numpad keys
-				(keyCode > 185 && keyCode < 193) || // ;=,-./` (in order)
-				(keyCode > 218 && keyCode < 223);   // [\]' (in order)
-			// console.log(e);
-			// ctrl-C
-			if (e.ctrlKey && keyCode === 67) {
-				this.inputSend(false);
-			}
-			// meta-V
-			else if (e.metaKey && keyCode === 86) {
-				navigator.clipboard.readText().then(text => { this.pasteText(text); });
-			}
-			// meta-C
-			else if (e.metaKey) {
+			
+      if (!getRef(index)) {
+				if (!retried) {
+					window.setTimeout(() => {
+						this.setCursor(index, true);
+					}, 5);
+				}
 				return;
 			}
-			// Enter
-			else if (keyCode === 13) {
-				this.inputSend();
-			}
-			// Backspakce
-			else if (keyCode === 8 || keyCode === 46) {
-				let backward = (keyCode === 46) ? 0 : 1;
-				let index = (this.cursorIndex === 0) ? this.input.length : this.cursorIndex - backward;
-				let str = this.input;
-				let part1 = str.substring(0, index - 1);
-				let part2 = str.substring(index, str.length);
-				this.updateInput(part1 + part2);
 
-				if (this.cursorIndex === 0) {
-					this.setCursor(0);
-				} else {
-					this.updateCursor(-backward);
-				}
+      getRef(this.cursorIndex).className = "";
+      getRef(index).className = "cursor";
+      this.cursorIndex = index;
+		},
+		
+		writeToInput(str) {
+			let index =
+				this.cursorIndex === 0 ? this.input.length : this.cursorIndex - 1;
+			this.updateInput(
+				this.input.substring(0, index) +
+				str +
+				this.input.substring(index, this.input.length)
+			);
+			this.addToCursor(str.length);
+		},
+
+    updateInput(str) {
+      this.input = str;
+      this.$emit("update:input", str);
+    },
+
+    addToCursor(nb) {
+      let predict = this.cursorIndex + nb;
+      let newIndex = this.cursorIndex;
+
+      // If at the of the initial position
+      if (this.cursorIndex === 0) {
+        newIndex = predict === -1 ? this.input.length : 0;
+      }
+      // If at the end of input then go to the initial cursor index
+      else if (predict > this.input.length) {
+        newIndex = 0;
+      }
+      // If at the beggining of the input, stays here
+      else if (predict < 1) {
+        newIndex = 1;
+      } else {
+        newIndex += nb;
+      }
+
+      this.setCursor(newIndex);
+    },
+
+    handleKey(e) {
+      const keyCode = e.keyCode;
+      const printableKeys =
+        (keyCode > 47 && keyCode < 58) || // number keys
+        keyCode == 32 ||
+        keyCode == 13 || // spacebar & return key(s) (if you want to allow carriage returns)
+        (keyCode > 64 && keyCode < 91) || // letter keys
+        (keyCode > 95 && keyCode < 112) || // numpad keys
+        (keyCode > 185 && keyCode < 193) || // ;=,-./` (in order)
+				(keyCode > 218 && keyCode < 223); // [\]' (in order)
+
+			// space
+			if (keyCode === 32) {
+				e.preventDefault();
 			}
-			// Arrow
-			else if (keyCode === 37 || keyCode === 39) {
-				this.updateCursor((keyCode === 37) ? -1 : 1);
+
+      // ctrl-C
+      if (e.ctrlKey && keyCode === 67) {
+        this.clearInput();
 			}
-			// Arrow up
-			else if (keyCode === 38) {
-				let length = this.commandsHistory.length;
-				if (!length) return;
-				if (this.commandsHistoryIndex + 1 > length) this.commandsHistoryIndex = length;
-				else this.commandsHistoryIndex++;
-				this.updateInput(this.commandsHistory[this.commandsHistoryIndex - 1]);
+      // meta-V or ctrl-V for windows users
+      else if ((e.metaKey && keyCode === 86) || (e.ctrlKey && keyCode === 86 && navigator.platform === "Win32")) {
+        navigator.clipboard.readText().then(text => {
+          this.paste(text);
+        });
+			}
+      // meta-C
+      else if (e.metaKey) {
+        return;
+      }
+      // Enter
+      else if (keyCode === 13) {
+        this.sendInput();
+      }
+      // Backspakce
+      else if (keyCode === 8 || keyCode === 46) {
+        let backward = keyCode === 46 ? 0 : 1;
+        let index =
+          this.cursorIndex === 0
+            ? this.input.length
+            : this.cursorIndex - backward;
+        let str = this.input;
+        let part1 = str.substring(0, index - 1);
+        let part2 = str.substring(index, str.length);
+        this.updateInput(part1 + part2);
+
+        if (this.cursorIndex === 0) {
+          this.setCursor(0);
+        } else {
+          this.addToCursor(-backward);
+        }
+      }
+      // Arrow left/right
+      else if (keyCode === 37 || keyCode === 39) {
+        this.addToCursor(keyCode === 37 ? -1 : 1);
+      }
+      // Arrow up
+      else if (keyCode === 38) {
+				e.preventDefault();
+        let length = this.commandsHistory.length;
+        if (!length) return;
+        if (this.commandsHistoryIndex + 1 > length)
+          this.commandsHistoryIndex = length;
+        else this.commandsHistoryIndex++;
+        this.updateInput(this.commandsHistory[this.commandsHistoryIndex - 1]);
+        this.setCursor(0);
+      }
+      // Arrow down
+      else if (keyCode === 40) {
+				e.preventDefault();
+        if (this.commandsHistoryIndex - 1 <= 0) {
+          this.commandsHistoryIndex = 0;
+          this.updateInput(this.savedInput);
+        } else
+          this.updateInput(
+            this.commandsHistory[--this.commandsHistoryIndex - 1]
+          );
 				this.setCursor(0);
 			}
-			// Arrow down
-			else if (keyCode === 40) {
-				if (this.commandsHistoryIndex - 1 <= 0) {
-					this.commandsHistoryIndex = 0;
-					this.updateInput(this.savedInput);
-				}
-				else this.updateInput(this.commandsHistory[--this.commandsHistoryIndex - 1]);
+			// End
+			else if (keyCode === 35) {
+				e.preventDefault();
+				this.setCursor(1);
+			}
+			// Home
+			else if (keyCode === 36) {
+				e.preventDefault();
 				this.setCursor(0);
 			}
-			// Other
-			else if (printable) {
-				if (this.input.length >= this.limit) return;
-				let index = (this.cursorIndex === 0) ? this.input.length : this.cursorIndex - 1;
-				let input = this.input.substring(0, index) + e.key + this.input.substring(index, this.input.length);
-
-				this.updateInput(input);
-				if (this.commandsHistoryIndex > 0) this.commandsHistory[this.commandsHistoryIndex - 1] = input;
-				else this.savedInput = input;
-				this.updateCursor(1);
+			// Tab
+			else if (keyCode === 9) {
+				// To do :
+				// Make a better tabulation integration
+				e.preventDefault();
+				this.writeToInput("    "); //
 			}
-		}
-	},
+      // Printable keys (a,b,c ...)
+      else if (printableKeys) {
+        // if (this.input.length >= this.inputLimit) return;
+				this.writeToInput(e.key);
+        if (this.commandsHistoryIndex > 0)
+          this.commandsHistory[this.commandsHistoryIndex - 1] = this.input;
+        else this.savedInput = this.input;
+      }
+    }
+  },
 
-	//
-	// Created
-	//
-	created() {
-		window.addEventListener("keydown", (e) => {
-			this.handleKey(e);
-		});
+  //
+  // Created
+  //
+  created() {
+    window.addEventListener("keydown", e => {
+      this.handleKey(e);
+    });
 
-		this.$on("write", line => {
-			this.write(line);
-		});
+    this.$on("write", line => {
+      this.write(line);
+    });
 
-		this.$on("clearHistory", () => {
-			this.history = [];
-		});
-	}
+    this.$on("clearHistory", () => {
+      this.history = [];
+    });
+  }
 };
 </script>
 
-<style scoped>
+<style>
+.vue-terminal-container {
+  position: absolute;
+  height: 100vh;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
 
-	.vue-terminal-container {
-    position: absolute;
-		height: 100vh;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    overflow: auto;
-	}
+#terminal {
+  height: 100%;
+  overflow-x: hidden;
+  background-color: #292a35;
+  color: #fff;
+  font-family: monospace;
+  padding: 0;
+  margin: 0;
+}
 
-	#terminal {
-		height: 100%;
-		overflow-x: hidden;
-		background-color: #292a35;
-		color: #fff;
-		font-family: monospace;
-		padding: 0;
-		margin: 0;
-	}
+.prefix {
+  float: left;
+}
 
-	.prefix {
-		float: left;
-	}
+#input,
+.line {
+  word-break: break-all;
+  min-height: 1.2em;
+}
 
-	#input, .line {
-		word-break: break-all;
-		min-height: 1.2em;
-	}
+label {
+  display: inline-block;
+}
 
-	label {
-		display: inline-block;
-	}
+section {
+  margin: 2rem 0;
+}
 
-	section {
-		margin: 2rem 0;
-	}
+#input .cursor {
+  background: #c7c7c7;
+  color: #111;
+  animation-name: blip;
+  animation-duration: 1s; 
+  animation-iteration-count: infinite;
+}
 
-	#input .cursor {
-		background: #c7c7c7;
+.rainbow-text {
+	background: repeating-linear-gradient(85deg, red, orange, yellow, lime, cyan, purple, violet, red);
+	text-align: center;
+	background-size: 300% 300%;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	animation: rainbow 3s linear 0s infinite;
+}
+
+@keyframes blip {
+  0%, 49% {
 		color: #111;
+		background: #c7c7c7;
 	}
+  50%, 100% {
+		background: inherit;
+		color: #fff;
+	}
+}
 
+@keyframes rainbow {
+	0% {
+    background-position: 0% 0%;
+	}
+	50% {
+    background-position: 75% 0%;
+	}
+	100% {
+		background-position: 150% 0%;
+	}
+}
 </style>

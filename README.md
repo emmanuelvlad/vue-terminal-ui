@@ -23,7 +23,7 @@ Here is an example
 <vue-terminal-ui
   ref="my-terminal-ui"
   prefix="user@host:"
-  @triggerCommand="doSomething"
+  @triggerCommand="commandHandler"
 />
 ```
 

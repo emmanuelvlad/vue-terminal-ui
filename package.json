@@ -1,6 +1,6 @@
 {
 	"name": "@evlad/vue-terminal-ui",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Terminal UI based on vue",
 	"main": "dist/vue-terminal-ui.umd.js",
 	"module": "dist/vue-terminal-ui.esm.js",

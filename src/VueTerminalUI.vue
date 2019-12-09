@@ -1,5 +1,7 @@
 <template>
-	<div class="vue-terminal-container">
+	<div
+		class="vue-terminal-container"
+		ref="terminal">
 		<div
 			id="terminal"
 			@keyup.ctrl="handleKey"
@@ -61,7 +63,9 @@ export default {
       commandsHistoryIndex: 0,
       savedInput: "",
       cursorIndex: 0,
-      inputLimit: 255
+			inputLimit: 255,
+			height: 0,
+			width: 0,
     };
   },
 
@@ -72,14 +76,26 @@ export default {
     prefix: {
       type: String,
       default: ""
-    }
+		},
+		initMessage: {
+			type: Array,
+			default: () => []
+		}
   },
 
   //
   // Methods
   //
   methods: {
-    write(content, prefix = false) {
+		parseText(str) {
+			return String(str)
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/ /g, "&nbsp;")
+				.replace(/\n/g, "<br>");
+		},
+
+		styleAndColorText(str) {
 			const colorHandler = (str) => {
 				let colorTagFound = false;
 
@@ -133,23 +149,41 @@ export default {
 
 				return (lastStyleFound) ? colorParsed + `</${lastStyleFound}>` : colorParsed;
 			};
+			return colorHandler(styleHandler(str));
+		},
 
+    write(content, prefix = false) {
+      let parsed = this.parseText(content);
 
-
-      let parsed = String(content)
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/ /g, "&nbsp;")
-				.replace(/\n/g, "<br>");
-
-      new Promise(res => {
+      return new Promise(res => {
         this.history.push({
 					prefix: prefix ? this.prefix : "",
-					content: (prefix ? parsed : colorHandler(styleHandler(parsed))) || "&#8203;"
+					content: (prefix ? parsed : this.styleAndColorText(parsed)) || "&#8203;"
 				});
         res();
       }).then(() => {
         this.$refs["text"].scrollIntoView(false);
+      });
+		},
+
+		multiwrite(content, replace = false) {
+			let writeArray = [];
+			for (let i = 0; i < content.length; i++) {
+				writeArray.push({
+					prefix: "",
+					content: this.styleAndColorText(this.parseText(content[i])) || "&#8203;",
+				});
+			}
+
+			return new Promise(res => {
+				if (!replace) {
+					this.history = this.history.concat(writeArray);
+				} else {
+					this.history = this.history.slice(0, this.history.length - writeArray.length - 1).concat(writeArray);
+				}
+				res();
+			}).then(() => {
+				this.$refs["text"].scrollIntoView(false);
       });
 		},
 		
@@ -354,14 +388,29 @@ export default {
       this.handleKey(e);
     });
 
-    this.$on("write", line => {
-      this.write(line);
-    });
+    this.$on("write", (data, overwrite = false) => {
+			if (Array.isArray(data)) {
+				this.multiwrite(data, overwrite);
+			} else {
+				this.write(data);
+			}
+		});
 
     this.$on("clearHistory", () => {
       this.history = [];
-    });
-  }
+		});
+
+		this.$on
+		
+	},
+	
+	mounted() {
+		this.multiwrite(this.initMessage);
+	},
+
+	// watch: {
+	// 	this.$refs.terminal.clientHeight
+	// }
 };
 </script>
 

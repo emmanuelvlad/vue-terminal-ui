@@ -99,13 +99,16 @@ export default {
 			const colorHandler = (str) => {
 				let colorTagFound = false;
 
-				let colorParsed = str.replace(/\\color:((#[a-f0-9]{6})|(rainbow));/gi, (tag) => {
+				let colorParsed = str.replace(/\\color:((#[a-f0-9]{6})|(rainbow)|(none));/gi, (tag) => {
 					let colorCode = tag.substring(7, tag.length - 1);
 					let replaced;
 
 					switch (tag.substring(7, tag.length - 1)) {
 						case "rainbow":
 							replaced = (colorTagFound) ? `</span><span class='rainbow-text'>` : `<span class='rainbow-text'>`;
+							break;
+						case "none":
+							replaced = (colorTagFound) ? "</span>" : "";
 							break;
 						default:
 							replaced = (colorTagFound) ? `</span><span style="color: ${colorCode};">` : `<span style="color: ${colorCode};">`;

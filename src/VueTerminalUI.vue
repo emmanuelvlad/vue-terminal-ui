@@ -381,9 +381,9 @@ export default {
   },
 
   //
-  // Created
+  // Mounted
   //
-  created() {
+  mounted() {
     window.addEventListener("keydown", e => {
       this.handleKey(e);
     });
@@ -402,9 +402,6 @@ export default {
 
 		this.$on
 		
-	},
-	
-	mounted() {
 		this.multiwrite(this.initMessage);
 	},
 

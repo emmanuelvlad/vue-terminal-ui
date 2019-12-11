@@ -13,7 +13,9 @@ export default
 			},
 			plugins: [
 				commonjs(),
-				vue(),
+				vue({
+					css: true,
+				}),
 				buble(),
 				cleanup(),
 			]

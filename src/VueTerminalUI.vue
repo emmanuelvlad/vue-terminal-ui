@@ -200,7 +200,7 @@ export default {
 			this.clearInput();
 
 			if (savedInput.trim()) {
-				let commandArgs = savedInput.trim().split(" ");
+				let commandArgs = savedInput.trim().split(/(?<!\\) /g);
 				this.commandsHistory.unshift(savedInput);
 				this.$emit("triggerCommand", commandArgs[0], commandArgs.splice(1, commandArgs.length));
 			}
@@ -307,7 +307,7 @@ export default {
       else if (keyCode === 13) {
         this.sendInput();
       }
-      // Backspakce
+      // Backspace
       else if (keyCode === 8 || keyCode === 46) {
         let backward = keyCode === 46 ? 0 : 1;
         let index =
@@ -355,12 +355,12 @@ export default {
 			// End
 			else if (keyCode === 35) {
 				e.preventDefault();
-				this.setCursor(1);
+				this.setCursor(0);
 			}
 			// Home
 			else if (keyCode === 36) {
 				e.preventDefault();
-				this.setCursor(0);
+				this.setCursor(1);
 			}
 			// Tab
 			else if (keyCode === 9) {

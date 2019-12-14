@@ -92,7 +92,10 @@ export default {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/ /g, "&nbsp;")
-				.replace(/\n/g, "<br>");
+				.replace(/\n/g, "<br>")
+				.replace(/((https?:\/\/)|(www\.))(\S+)/gi, (group) => {
+					return `<a href="${group.startsWith("http") ? group : "//" + group}" target="_blank">${group}</a>`;
+				});
 		},
 
 		styleAndColorText(str) {
@@ -415,6 +418,10 @@ export default {
 </script>
 
 <style>
+a {
+	color: inherit;
+}
+
 .vue-terminal-container {
   position: absolute;
   height: 100vh;

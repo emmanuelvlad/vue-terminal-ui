@@ -4,6 +4,8 @@
 
 ![gif](https://i.imgur.com/XV9pGib.gif)
 
+Live demo at [www.emmanuelvlad.com](www.emmanuelvlad.com)
+
 ## Installation
 
 ```
